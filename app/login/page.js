@@ -6,18 +6,24 @@ import {
   signInWithRedirect,
   getRedirectResult,
 } from "firebase/auth";
-import { auth, googleProvider } from "../../lib/firebase";
+import { auth, googleProvider } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useGameStore } from "@/store/useGameStore";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  // 🔥 CORRECT FUNCTION
+  const loadUser = useGameStore((state) => state.loadUser);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ EMAIL + PASSWORD LOGIN
+  // ===============================
+  // EMAIL LOGIN
+  // ===============================
   const handleLogin = async () => {
     if (!email || !password) {
       alert("Please fill all fields");
@@ -26,9 +32,17 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("🚀 Welcome back!");
-      router.push("/dashboard"); // ✅ REDIRECT
+
+      const res = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+      // 🔥 THIS IS THE FIX
+      loadUser(res.user);
+
+      router.push("/profile/edit");
     } catch (err) {
       alert(err.message);
     } finally {
@@ -36,89 +50,69 @@ export default function LoginPage() {
     }
   };
 
-  // ✅ GOOGLE LOGIN (REDIRECT METHOD)
+  // ===============================
+  // GOOGLE LOGIN
+  // ===============================
   const handleGoogleLogin = async () => {
-    try {
-      setLoading(true);
-      await signInWithRedirect(auth, googleProvider);
-    } catch (err) {
-      alert(err.message);
-      setLoading(false);
-    }
+    setLoading(true);
+    await signInWithRedirect(auth, googleProvider);
   };
 
-  // ✅ HANDLE GOOGLE REDIRECT RESULT (FIXED)
+  // ===============================
+  // GOOGLE REDIRECT RESULT
+  // ===============================
   useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          alert("🔥 Logged in with Google!");
-          router.push("/dashboard"); // ✅ REDIRECT
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []); // ✅ EMPTY ARRAY (IMPORTANT)
+    getRedirectResult(auth).then((res) => {
+      if (res?.user) {
+        loadUser(res.user); // 🔥 FIX HERE TOO
+        router.push("/profile/edit");
+      }
+    });
+  }, [loadUser, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e]">
       <div className="w-[390px] bg-white/10 backdrop-blur-xl border border-white/20 p-8 rounded-2xl text-white shadow-2xl">
 
         <h1 className="text-3xl font-extrabold text-center mb-2">
-         ThinkRush
+          ThinkRush
         </h1>
 
         <p className="text-center text-sm text-gray-300 mb-6">
           Train your brain. Let AI guide the way.
         </p>
 
-        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
+          className="w-full mb-4 px-4 py-3 rounded-lg bg-black/40"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full mb-4 px-4 py-3 rounded-lg bg-black/40 border border-white/20 focus:outline-none"
         />
 
-        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password"
+          className="w-full mb-4 px-4 py-3 rounded-lg bg-black/40"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full mb-4 px-4 py-3 rounded-lg bg-black/40 border border-white/20 focus:outline-none"
         />
 
-        {/* EMAIL LOGIN BUTTON */}
         <button
           onClick={handleLogin}
           disabled={loading}
-          className="w-full py-3 mb-4 rounded-lg font-semibold text-lg bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-[1.03] transition"
+          className="w-full py-3 mb-4 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500"
         >
           {loading ? "Entering..." : "Enter the Arena"}
         </button>
 
-        {/* GOOGLE LOGIN BUTTON */}
         <button
           onClick={handleGoogleLogin}
-          disabled={loading}
-          className="w-full py-3 rounded-lg bg-white text-black font-semibold flex items-center justify-center gap-2 hover:scale-[1.02] transition"
+          className="w-full py-3 rounded-lg bg-white text-black flex justify-center gap-2"
         >
-          <Image src="/images/google.png" alt="google" width={20} height={20} />
+          <Image src="/images/google.png" width={20} height={20} alt="google" />
           Continue with Google
         </button>
-
-        <p className="text-center text-sm text-gray-300 mt-6">
-          New player?{" "}
-          <span
-            onClick={() => router.push("/signup")}
-            className="text-purple-400 cursor-pointer hover:underline"
-          >
-            Create Account
-          </span>
-        </p>
       </div>
     </div>
   );
