@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "gamified_quiz",
+=======
+  "name": "gamified-quiz-platform",
+>>>>>>> d778857a21778ea9426c9ced4e35a6b9db05114f
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,12 +13,18 @@
     "lint": "eslint"
   },
   "dependencies": {
+<<<<<<< HEAD
     "firebase": "^12.9.0",
     "next": "16.1.6",
     "type":"module",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "zustand": "^5.0.11"
+=======
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+>>>>>>> d778857a21778ea9426c9ced4e35a6b9db05114f
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
