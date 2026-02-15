@@ -1,20 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  createUserWithEmailAndPassword,
-  signInWithRedirect,
-  getRedirectResult,
-} from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase";
+import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { useGameStore } from "@/store/useGameStore";
 
 export default function RegisterPage() {
   const router = useRouter();
-
-  // ✅ CORRECT FUNCTION FROM STORE
   const loadUser = useGameStore((state) => state.loadUser);
 
   const [email, setEmail] = useState("");
@@ -22,7 +15,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
 
   // ===============================
-  // EMAIL SIGNUP
+  // EMAIL SIGNUP ONLY
   // ===============================
   const handleRegister = async () => {
     if (!email || !password) {
@@ -39,9 +32,10 @@ export default function RegisterPage() {
         password
       );
 
-      // 🔥 THIS IS THE FIX
+      // Load user into store
       loadUser(res.user);
 
+      // Redirect
       router.push("/profile/edit");
     } catch (err) {
       alert(err.message);
@@ -49,27 +43,6 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
-  // ===============================
-  // GOOGLE SIGNUP
-  // ===============================
-  const handleGoogleSignup = async () => {
-    setLoading(true);
-    await signInWithRedirect(auth, googleProvider);
-  };
-
-  // ===============================
-  // GOOGLE REDIRECT RESULT
-  // ===============================
-  useEffect(() => {
-    getRedirectResult(auth).then((res) => {
-      if (res?.user) {
-        // 🔥 SAME FIX HERE
-        loadUser(res.user);
-        router.push("/profile/edit");
-      }
-    });
-  }, [loadUser, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e]">
@@ -83,6 +56,7 @@ export default function RegisterPage() {
           Train your brain. Let AI guide the way.
         </p>
 
+        {/* EMAIL */}
         <input
           type="email"
           placeholder="Email"
@@ -91,6 +65,7 @@ export default function RegisterPage() {
           onChange={(e) => setEmail(e.target.value)}
         />
 
+        {/* PASSWORD */}
         <input
           type="password"
           placeholder="Password (min 6 chars)"
@@ -99,20 +74,13 @@ export default function RegisterPage() {
           onChange={(e) => setPassword(e.target.value)}
         />
 
+        {/* SIGNUP BUTTON */}
         <button
           onClick={handleRegister}
           disabled={loading}
           className="w-full py-3 mb-4 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500"
         >
           {loading ? "Creating..." : "Create Account"}
-        </button>
-
-        <button
-          onClick={handleGoogleSignup}
-          className="w-full py-3 rounded-lg bg-white text-black flex justify-center gap-2"
-        >
-          <Image src="/images/google.png" width={20} height={20} alt="google" />
-          Sign up with Google
         </button>
 
         <p className="text-center text-sm text-gray-300 mt-6">

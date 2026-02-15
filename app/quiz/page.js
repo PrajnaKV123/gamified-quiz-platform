@@ -1,6 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Header from "../../components/header";
+import Footer from "../../components/footer";
 
 export default function QuizCategoryPage() {
   const router = useRouter();
@@ -62,9 +64,14 @@ export default function QuizCategoryPage() {
   };
 
   return (
+    
+    
+    
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] p-6 text-white">
+     <Header/>
 
       <h1 className="text-4xl font-extrabold text-center mb-2">
+        
         🎮 Choose Your Challenge
       </h1>
 
@@ -106,6 +113,7 @@ export default function QuizCategoryPage() {
           </div>
         ))}
       </div>
+      <Footer/>
     </div>
   );
 }
