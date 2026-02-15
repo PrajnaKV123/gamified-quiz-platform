@@ -36,7 +36,7 @@ export default function Home() {
     </p>
 
     <div className="flex flex-col sm:flex-row justify-center gap-4">
-      <Link href="/login">
+      <Link href="/signup">
         <button className="px-8 py-3 rounded-full font-semibold
         bg-gradient-to-r from-purple-500 to-pink-500
         hover:scale-105 transition duration-300">
