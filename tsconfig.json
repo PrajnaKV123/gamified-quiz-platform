@@ -29,10 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-<<<<<<< HEAD
-, "app/layout.js", "app/page.js"  ],
-=======
   ],
->>>>>>> d778857a21778ea9426c9ced4e35a6b9db05114f
   "exclude": ["node_modules"]
 }
