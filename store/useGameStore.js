@@ -1,45 +1,111 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 
-export const useGameStore = create(
-  persist(
-    (set) => ({
-      name: "",
-      email: "",
-      bio: "",
+const defaultState = {
+  name: "",
+  email: "",
+  bio: "",
+  xp: 0,
+  streak: 0,
+  totalQuestions: 0,
+  correctAnswers: 0,
+  lastPlayedDate: null,
+};
 
-      xp: 0,
-      streak: 0,
-      totalQuestions: 0,
-      correctAnswers: 0,
+export const useGameStore = create((set, get) => ({
+  ...defaultState,
 
-      setProfile: (data) =>
-        set((state) => ({
-          ...state,
-          ...data,
-        })),
+  
+  loadUser: (user) => {
+    const email = user.email;
+    const saved = localStorage.getItem(`game-${email}`);
 
-      recordAnswer: (isCorrect) =>
-        set((state) => ({
-          totalQuestions: state.totalQuestions + 1,
-          correctAnswers: isCorrect
-            ? state.correctAnswers + 1
-            : state.correctAnswers,
-          xp: isCorrect ? state.xp + 10 : state.xp,
-        })),
-
-      completeQuiz: () =>
-        set((state) => ({
-          streak: state.streak + 1,
-        })),
-
-      failQuiz: () =>
-        set(() => ({
-          streak: 0,
-        })),
-    }),
-    {
-      name: "game-storage",
+    if (saved) {
+      set(JSON.parse(saved));
+    } else {
+      set({
+        ...defaultState,
+        name: user.displayName || "Player",
+        email,
+      });
     }
-  )
-);
+  },
+
+  
+  setProfile: (data) => {
+    set((state) => {
+      const updated = {
+        ...state,
+        ...data,
+      };
+
+      if (state.email) {
+        localStorage.setItem(
+          `game-${state.email}`,
+          JSON.stringify(updated)
+        );
+      }
+
+      return updated;
+    });
+  },
+
+  recordAnswer: (isCorrect) => {
+    set((state) => {
+      const updated = {
+        ...state,
+        totalQuestions: state.totalQuestions + 1,
+        correctAnswers: isCorrect
+          ? state.correctAnswers + 1
+          : state.correctAnswers,
+        xp: isCorrect ? state.xp + 10 : state.xp,
+      };
+
+      if (state.email) {
+        localStorage.setItem(
+          `game-${state.email}`,
+          JSON.stringify(updated)
+        );
+      }
+
+      return updated;
+    });
+  },
+
+  
+  completeQuiz: () => {
+    const today = new Date().toISOString().split("T")[0];
+    const { lastPlayedDate, streak, email } = get();
+
+    let newStreak = streak;
+
+    if (!lastPlayedDate) {
+      newStreak = 1;
+    } else if (lastPlayedDate === today) {
+      return; // al
+    } else {
+      const yesterday = new Date(Date.now() - 86400000)
+        .toISOString()
+        .split("T")[0];
+
+      newStreak = lastPlayedDate === yesterday ? streak + 1 : 1;
+    }
+
+    const updated = {
+      ...get(),
+      streak: newStreak,
+      lastPlayedDate: today,
+    };
+
+    if (email) {
+      localStorage.setItem(
+        `game-${email}`,
+        JSON.stringify(updated)
+      );
+    }
+
+    set(updated);
+  },
+
+  
+  resetSession: () => set(defaultState),
+}));
