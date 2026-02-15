@@ -1,32 +1,46 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useGameStore } from "../../store/useGameStore";
+import { useGameStore } from "@/store/useGameStore";
+import Header from "../../components/header";
+import Footer from "../../components/footer";
 
 export default function DashboardPage() {
   const router = useRouter();
 
   const {
     name,
-    level,
     xp,
     streak,
     totalQuestions,
     correctAnswers,
   } = useGameStore();
+const XP_PER_LEVEL = 50;
 
-  const xpToNextLevel = 50 - (xp % 50);
+const level = Math.floor(xp / XP_PER_LEVEL) + 1;
+
+const xpInLevel =
+  xp % XP_PER_LEVEL === 0 && xp !== 0
+    ? XP_PER_LEVEL
+    : xp % XP_PER_LEVEL;
+
+const xpToNextLevel = XP_PER_LEVEL - xpInLevel;
+
+const progressPercent = (xpInLevel / XP_PER_LEVEL) * 100;
+
   const accuracy =
     totalQuestions === 0
       ? 0
       : Math.round((correctAnswers / totalQuestions) * 100);
 
   return (
+    <div>
+      <Header/>
     <div className="min-h-screen bg-gradient-to-br from-[#0f0c29] via-[#302b63] to-[#24243e] p-6 text-white">
 
       {/* HEADER */}
       <h1 className="text-3xl font-extrabold mb-6">
-        👋 Welcome, {name}
+        👋 Welcome {name || "User"}
       </h1>
 
       {/* GRID 1 */}
@@ -76,8 +90,8 @@ export default function DashboardPage() {
           <h2 className="text-xl font-bold mb-4">📊 Progress</h2>
           <div className="w-full bg-black/40 rounded-full h-3">
             <div
-              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full"
-              style={{ width: `${(xp % 50) * 2}%` }}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
             />
           </div>
           <p className="text-sm mt-2 text-gray-300">
@@ -89,14 +103,20 @@ export default function DashboardPage() {
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-3">🧠 Skills</h2>
 
-          <p className="text-sm mb-1">Logic</p>
+          <p className="text-sm mb-1">Accuracy</p>
           <div className="w-full bg-black/40 h-2 rounded-full mb-2">
-            <div className="bg-purple-500 h-2 w-[70%] rounded-full" />
+            <div
+              className="bg-purple-500 h-2 rounded-full"
+              style={{ width: `${accuracy}%` }}
+            />
           </div>
 
-          <p className="text-sm mb-1">Speed</p>
+          <p className="text-sm mb-1">Progress</p>
           <div className="w-full bg-black/40 h-2 rounded-full">
-            <div className="bg-pink-500 h-2 w-[50%] rounded-full" />
+            <div
+              className="bg-pink-500 h-2 rounded-full"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
         </div>
 
@@ -104,8 +124,9 @@ export default function DashboardPage() {
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-2">🤖 AI Insight</h2>
           <p className="text-sm text-gray-300">
-            You’re strong in logic.  
-            Try timed quizzes to boost speed ⚡
+            {accuracy > 70
+              ? "You're performing great! Try harder difficulty."
+              : "Practice more quizzes to improve your accuracy."}
           </p>
         </div>
       </div>
@@ -113,7 +134,6 @@ export default function DashboardPage() {
       {/* GRID 3 */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
 
-        {/* START QUIZ */}
         <div className="md:col-span-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl p-6 shadow-xl">
           <h2 className="text-2xl font-extrabold mb-2">
             🚀 Ready to play?
@@ -129,27 +149,22 @@ export default function DashboardPage() {
           </button>
         </div>
 
-        {/* DAILY CHALLENGE */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-2">📅 Today’s Challenge</h2>
           <p className="text-sm text-gray-300 mb-3">
-            Complete <b>5 questions</b> without skipping
+            Complete 5 correct answers
           </p>
-          <button className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-sm">
-            Start Challenge
-          </button>
         </div>
 
-        {/* LEADERBOARD */}
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-3">🏆 Leaderboard</h2>
           <ol className="text-sm space-y-2">
-            <li>🥇 Alex — 320 XP</li>
-            <li>🥈 You — {xp} XP</li>
-            <li>🥉 Sam — 120 XP</li>
+            <li>🥇 You — {xp} XP</li>
           </ol>
         </div>
       </div>
+    </div>
+    <Footer/>
     </div>
   );
 }
